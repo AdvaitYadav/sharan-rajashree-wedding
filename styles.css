@@ -20,6 +20,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -31,6 +32,13 @@ body {
     linear-gradient(135deg, #fff8e7, #ffe5bd 48%, #fff3da);
   font-family: Avenir Next, Avenir, Futura, Trebuchet MS, Arial, sans-serif;
   overflow-x: hidden;
+}
+
+canvas,
+iframe,
+img,
+svg {
+  max-width: 100%;
 }
 
 body.gate-active {
@@ -397,9 +405,14 @@ nav {
   display: flex;
   flex-wrap: wrap;
   gap: clamp(12px, 2vw, 28px);
+  min-width: 0;
   font-size: 0.78rem;
   font-weight: 1000;
   text-transform: uppercase;
+}
+
+nav a {
+  white-space: nowrap;
 }
 
 .section-panel {
@@ -575,6 +588,30 @@ h1 {
   line-height: 1.1;
 }
 
+.date-reveal-link {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 250, 241, 0.7);
+  border-radius: 999px;
+  color: var(--gold);
+  background: rgba(36, 11, 24, 0.36);
+  font-size: 0.72rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-transform: uppercase;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.date-reveal-link:hover,
+.date-reveal-link:focus-visible {
+  background: rgba(36, 11, 24, 0.62);
+  transform: translateY(-1px);
+}
+
 .story,
 .gallery,
 .rsvp,
@@ -589,7 +626,9 @@ h1 {
 .rsvp-copy {
   position: relative;
   z-index: 1;
+  width: min(100%, 760px);
   max-width: 760px;
+  min-width: 0;
 }
 
 .section-heading::after,
@@ -609,6 +648,9 @@ h1 {
 
 .scratch-date {
   min-height: auto;
+  display: grid;
+  justify-items: center;
+  text-align: center;
   background:
     radial-gradient(circle at 78% 28%, rgba(216, 27, 96, 0.16), transparent 18rem),
     linear-gradient(135deg, #fff6e4, #eaf7f5);
@@ -619,7 +661,7 @@ h1 {
   z-index: 1;
   width: min(100%, 680px);
   height: clamp(180px, 28vw, 230px);
-  margin-top: 28px;
+  margin: 28px auto 0;
   overflow: hidden;
   border: 4px solid var(--gold);
   border-radius: 8px;
@@ -666,15 +708,18 @@ h1 {
 }
 
 .scratch-card.revealed #scratchCanvas {
+  pointer-events: none;
   opacity: 0;
   transition: opacity 500ms ease;
 }
 
 h2 {
+  max-width: 100%;
   margin-bottom: 36px;
   font-size: clamp(2.6rem, 6vw, 6.8rem);
   line-height: 0.92;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -2225,7 +2270,7 @@ fieldset label {
 
   .site-header {
     position: fixed;
-    align-items: flex-start;
+    align-items: center;
     transform: none;
     width: auto;
     color: var(--white);
@@ -2235,10 +2280,18 @@ fieldset label {
   }
 
   nav {
-    justify-content: flex-end;
-    max-width: 250px;
-    gap: 8px 10px;
-    font-size: 0.72rem;
+    flex: 1;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    max-width: none;
+    gap: clamp(4px, 1.5vw, 8px);
+    overflow: hidden;
+    font-size: clamp(0.58rem, 2.35vw, 0.72rem);
+    line-height: 1;
+  }
+
+  nav a {
+    min-width: 0;
   }
 
   .brand {
@@ -2283,6 +2336,12 @@ fieldset label {
     font-size: 0.55rem;
   }
 
+  .date-reveal-link {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 0.62rem;
+  }
+
   .hero-date::before {
     width: 188px;
   }
@@ -2325,6 +2384,8 @@ fieldset label {
   .event-section {
     min-height: auto;
     padding: 56px 22px;
+    width: auto;
+    max-width: calc(100vw - 20px);
   }
 
   .event-section h3 {
@@ -2396,14 +2457,17 @@ fieldset label {
   }
 
   .site-header {
-    margin: 8px 10px 0;
+    left: 10px;
+    right: 10px;
+    margin: 8px 0 0;
     padding: 9px 11px 9px 8px;
     border-radius: 24px;
+    gap: 9px;
   }
 
   nav {
-    max-width: 228px;
-    gap: 7px 9px;
+    max-width: none;
+    gap: clamp(4px, 1.4vw, 8px);
   }
 
   .hero {
@@ -2433,8 +2497,25 @@ fieldset label {
     padding: 72px 22px;
   }
 
+  .section-heading,
+  .gallery-heading,
+  .rsvp-copy {
+    width: 100%;
+    max-width: 100%;
+  }
+
   h2 {
-    font-size: clamp(2.25rem, 14vw, 4.3rem);
+    font-size: clamp(2rem, 11.5vw, 3.65rem);
+    line-height: 0.95;
+    overflow-wrap: anywhere;
+  }
+
+  .events > .section-heading {
+    padding: 0 22px;
+  }
+
+  .events h2 {
+    font-size: clamp(1.95rem, 10.5vw, 3.45rem);
   }
 
   .story-card {
@@ -2453,7 +2534,8 @@ fieldset label {
   }
 
   .event-section h3 {
-    font-size: clamp(2.65rem, 15vw, 4.35rem);
+    font-size: clamp(2.35rem, 12.5vw, 3.9rem);
+    max-width: 100%;
   }
 
   .event-art {
@@ -2491,11 +2573,66 @@ fieldset label {
     padding: 18px;
   }
 
+  .venue {
+    padding-bottom: 58px;
+  }
+
+  .map-shell {
+    height: min(62vh, 260px);
+    margin-top: 20px;
+  }
+
   .music-toggle {
     right: 12px;
     bottom: 12px;
     width: 34px;
     height: 34px;
+  }
+}
+
+@media (max-width: 390px) {
+  .site-header {
+    left: 6px;
+    right: 6px;
+    margin: 7px 0 0;
+    padding: 8px 8px 8px 7px;
+    gap: 7px;
+  }
+
+  .brand {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    font-size: 0.72rem;
+  }
+
+  nav {
+    font-size: clamp(0.52rem, 2.55vw, 0.62rem);
+  }
+
+  .hero {
+    padding-inline: 18px;
+  }
+
+  .story,
+  .gallery,
+  .rsvp,
+  .scratch-date,
+  .venue,
+  .blessings {
+    padding-inline: 18px;
+  }
+
+  .event-section {
+    max-width: calc(100vw - 12px);
+    margin-inline: 6px;
+    padding-inline: 14px;
+  }
+
+  .event-section dl div,
+  .mini-event dl div {
+    grid-template-columns: 1fr;
+    gap: 5px;
   }
 }
 

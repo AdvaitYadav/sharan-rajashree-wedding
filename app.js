@@ -31,6 +31,10 @@ const PETAL_COLORS = [
   ["#ff9aa8", "#d62828"]
 ];
 
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
 function readRsvps() {
   return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || "[]");
 }
@@ -131,6 +135,7 @@ function setupScratchCard() {
   const context = scratchCanvas.getContext("2d");
   let isScratching = false;
   let scratchChecks = 0;
+  let hasRevealedDate = false;
 
   function revealIfEnoughScratched() {
     if (scratchCard.classList.contains("revealed")) {
@@ -153,11 +158,17 @@ function setupScratchCard() {
 
     const scratchedRatio = transparentPixels / (scratchCanvas.width * scratchCanvas.height);
     if (scratchedRatio >= 0.75) {
+      hasRevealedDate = true;
       scratchCard.classList.add("revealed");
     }
   }
 
   function paintCover() {
+    if (hasRevealedDate) {
+      scratchCard.classList.add("revealed");
+      return;
+    }
+
     const rect = scratchCard.getBoundingClientRect();
     const scale = window.devicePixelRatio || 1;
     scratchCanvas.width = Math.round(rect.width * scale);
@@ -274,6 +285,7 @@ function openInvitationGate() {
     return;
   }
 
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   inviteGate.classList.add("opening");
   document.body.classList.remove("gate-active");
   startWeddingSong();
@@ -527,6 +539,10 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && adminModal.classList.contains("open")) {
     closeAdminModal();
   }
+});
+
+window.addEventListener("load", () => {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 });
 
 revealTargets.forEach((target) => {
