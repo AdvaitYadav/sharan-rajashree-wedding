@@ -226,7 +226,8 @@ a {
 }
 
 .gate-transition-label {
-  position: relative;
+  position: absolute;
+  inset: 50% auto auto 50%;
   z-index: 3;
   display: grid;
   min-width: min(72vw, 360px);
@@ -234,15 +235,17 @@ a {
   place-items: center;
   margin: 0;
   color: rgba(255, 248, 231, 0.94);
-  font-size: clamp(1rem, 4vw, 2rem);
+  font-size: clamp(1.25rem, 5vw, 2.65rem);
   font-weight: 1000;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   line-height: 1.15;
   opacity: 0;
   text-align: center;
-  text-shadow: 0 4px 22px rgba(36, 11, 24, 0.55);
+  text-shadow:
+    0 3px 0 rgba(90, 22, 32, 0.44),
+    0 8px 26px rgba(36, 11, 24, 0.68);
   text-transform: uppercase;
-  transform: translateY(12px) scale(0.96);
+  transform: translate(-50%, calc(-50% + 12px)) scale(0.96);
   pointer-events: none;
 }
 
@@ -1729,16 +1732,16 @@ input[type="radio"] {
 @keyframes celebration-label {
   0% {
     opacity: 0;
-    transform: translateY(12px) scale(0.96);
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.96);
   }
   34%,
   82% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-8px) scale(1.02);
+    transform: translate(-50%, calc(-50% - 8px)) scale(1.02);
   }
 }
 
