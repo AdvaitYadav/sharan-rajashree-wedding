@@ -1645,19 +1645,22 @@ input[type="radio"] {
 @keyframes petal-fall {
   0% {
     transform: translate3d(0, -12vh, 0) rotate(var(--rotate)) rotateX(var(--tilt, 0deg)) scale(var(--scale-x, 1), var(--scale-y, 1));
-    opacity: 0;
+    opacity: var(--opacity, 0.9);
   }
   8% {
-    opacity: var(--opacity, 0.78);
+    opacity: var(--opacity, 0.9);
   }
   28% {
     transform: translate3d(var(--sway), 26vh, 0) rotate(calc(var(--rotate) + 96deg)) rotateX(var(--tilt-reverse, 0deg)) scale(var(--scale-x, 1), var(--scale-y, 1));
+    opacity: var(--opacity, 0.9);
   }
   50% {
     transform: translate3d(var(--drift), 48vh, 0) rotate(calc(var(--rotate) + 180deg)) rotateY(42deg) scale(var(--scale-y, 1), var(--scale-x, 1));
+    opacity: calc(var(--opacity, 0.9) * 0.76);
   }
   74% {
     transform: translate3d(calc(var(--drift) - var(--sway)), 78vh, 0) rotate(calc(var(--rotate) + 286deg)) rotateX(var(--tilt, 0deg)) scale(var(--scale-x, 1), var(--scale-y, 1));
+    opacity: calc(var(--opacity, 0.9) * 0.32);
   }
   100% {
     transform: translate3d(calc(var(--drift) * -0.45), 112vh, 0) rotate(calc(var(--rotate) + 360deg)) rotateY(-28deg) scale(var(--scale-x, 1), var(--scale-y, 1));

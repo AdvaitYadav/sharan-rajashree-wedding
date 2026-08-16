@@ -71,8 +71,8 @@ function createFallingElement(className, index, sizeRange, durationRange) {
   const delay = Math.random() * -duration;
   const drift = (Math.random() * 120 - 60).toFixed(1);
   const sway = (Math.random() * 36 - 18).toFixed(1);
-  const opacityBase = className === "mogra-flower" ? 0.58 : 0.48;
-  const opacityRange = className === "mogra-flower" ? 0.24 : 0.28;
+  const opacityBase = className === "mogra-flower" ? 0.76 : 0.7;
+  const opacityRange = className === "mogra-flower" ? 0.18 : 0.2;
   const opacity = (opacityBase + Math.random() * opacityRange).toFixed(2);
   const blur = (Math.random() * 0.45).toFixed(2);
   const scaleX = (0.82 + Math.random() * 0.34).toFixed(2);
