@@ -225,6 +225,27 @@ a {
   animation: gate-pulse 1.7s ease-in-out infinite;
 }
 
+.gate-transition-label {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  min-width: min(72vw, 360px);
+  min-height: min(72vw, 360px);
+  place-items: center;
+  margin: 0;
+  color: rgba(255, 248, 231, 0.94);
+  font-size: clamp(1rem, 4vw, 2rem);
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  line-height: 1.15;
+  opacity: 0;
+  text-align: center;
+  text-shadow: 0 4px 22px rgba(36, 11, 24, 0.55);
+  text-transform: uppercase;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+}
+
 .invite-gate.opening {
   pointer-events: none;
   animation: gate-fade 1800ms ease 1700ms forwards;
@@ -240,6 +261,10 @@ a {
 
 .invite-gate.opening .gate-copy {
   animation: copy-lift 1200ms ease 260ms forwards;
+}
+
+.invite-gate.opening .gate-transition-label {
+  animation: celebration-label 1900ms ease 980ms forwards;
 }
 
 .invite-gate.is-hidden {
@@ -1698,6 +1723,22 @@ input[type="radio"] {
   to {
     opacity: 0;
     transform: translateY(-18px);
+  }
+}
+
+@keyframes celebration-label {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  34%,
+  82% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.02);
   }
 }
 
