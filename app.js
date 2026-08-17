@@ -21,6 +21,8 @@ const revealTargets = document.querySelectorAll(
 );
 
 const RSVP_STORAGE_KEY = "weddingRsvps";
+// Paste the deployed Google Apps Script Web App URL here after deployment.
+const GOOGLE_SHEET_WEB_APP_URL = "";
 const NAME_PATTERN = /^[A-Za-z ]{2,80}$/;
 const PHONE_PATTERN = /^\+?[0-9]{7,15}$/;
 const PETAL_COLORS = [
@@ -35,18 +37,120 @@ if ("scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
-function readRsvps() {
+function readStoredRsvps() {
   return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || "[]");
 }
 
+let rsvpEntries = readStoredRsvps();
+
+function isRemoteRsvpEnabled() {
+  return GOOGLE_SHEET_WEB_APP_URL.trim().startsWith("https://script.google.com/");
+}
+
+function readRsvps() {
+  return rsvpEntries;
+}
+
 function writeRsvps(entries) {
+  rsvpEntries = entries;
   localStorage.setItem(RSVP_STORAGE_KEY, JSON.stringify(entries, null, 2));
 }
 
-function storeRsvp(entry) {
-  const entries = readRsvps();
-  entries.push(entry);
+function normalizeEvents(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return String(value || "")
+    .split(",")
+    .map((eventName) => eventName.trim())
+    .filter(Boolean);
+}
+
+function normalizeRemoteEntry(entry) {
+  return {
+    id: entry.id || entry.ID || crypto.randomUUID(),
+    name: entry.name || entry.Name || "",
+    phone: entry.phone || entry.Phone || "",
+    side: entry.side || entry.Side || "",
+    guests: Number(entry.guests || entry.Guests || 1),
+    attendance: entry.attendance || entry.Attendance || "",
+    events: normalizeEvents(entry.events || entry.Events),
+    message: entry.message || entry.Message || "",
+    submittedAt: entry.submittedAt || entry["Submitted At"] || entry.submitted_at || ""
+  };
+}
+
+async function fetchSheetRsvps() {
+  if (!isRemoteRsvpEnabled()) {
+    return readRsvps();
+  }
+
+  const url = new URL(GOOGLE_SHEET_WEB_APP_URL.trim());
+  url.searchParams.set("action", "list");
+  url.searchParams.set("_", String(Date.now()));
+
+  const response = await fetch(url.toString(), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Could not fetch RSVP sheet.");
+  }
+
+  const payload = await response.json();
+  const remoteEntries = Array.isArray(payload.entries) ? payload.entries : Array.isArray(payload) ? payload : [];
+  const entries = remoteEntries.map(normalizeRemoteEntry).filter((entry) => entry.name);
   writeRsvps(entries);
+  return entries;
+}
+
+async function refreshRsvpsFromSheet({ silent = false } = {}) {
+  try {
+    await fetchSheetRsvps();
+    if (adminModal.classList.contains("open")) {
+      renderAdminList();
+    }
+  } catch (error) {
+    console.warn("RSVP sheet fetch failed", error);
+    if (!silent && statusEl.textContent === "") {
+      statusEl.textContent = "Using saved RSVPs from this browser until the RSVP sheet is connected.";
+    }
+  }
+}
+
+async function saveRsvpToSheet(entry) {
+  if (!isRemoteRsvpEnabled()) {
+    return false;
+  }
+
+  const payload = new FormData();
+  payload.append("payload", JSON.stringify(entry));
+  payload.append("id", entry.id);
+  payload.append("name", entry.name);
+  payload.append("phone", entry.phone);
+  payload.append("side", entry.side);
+  payload.append("guests", String(entry.guests));
+  payload.append("attendance", entry.attendance);
+  payload.append("events", entry.events.join(", "));
+  payload.append("message", entry.message);
+  payload.append("submittedAt", entry.submittedAt);
+
+  await fetch(GOOGLE_SHEET_WEB_APP_URL.trim(), {
+    method: "POST",
+    mode: "no-cors",
+    body: payload
+  });
+
+  return true;
+}
+
+async function storeRsvp(entry) {
+  writeRsvps([...readRsvps(), entry]);
+
+  if (!isRemoteRsvpEnabled()) {
+    return { remote: false };
+  }
+
+  await saveRsvpToSheet(entry);
+  return { remote: true };
 }
 
 function createConfetti() {
@@ -327,10 +431,11 @@ function setFieldValidity(nameInput, phoneInput) {
   }
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
   event.preventDefault();
   const nameInput = form.elements.name;
   const phoneInput = form.elements.phone;
+  const submitButton = form.querySelector(".submit-action");
 
   nameInput.value = cleanName(nameInput.value);
   phoneInput.value = cleanPhone(phoneInput.value);
@@ -354,17 +459,32 @@ function handleSubmit(event) {
     submittedAt: new Date().toISOString()
   };
 
-  storeRsvp(entry);
-  statusEl.textContent = "You're on the list!";
-  form.reset();
-  enforceMessageLimit();
-  createConfetti();
+  submitButton.disabled = true;
+  statusEl.textContent = "Saving your RSVP...";
+
+  try {
+    const result = await storeRsvp(entry);
+    statusEl.textContent = result.remote
+      ? "You're on the list! RSVP saved."
+      : "You're on the list locally. Sheet connection is pending.";
+    form.reset();
+    enforceMessageLimit();
+    createConfetti();
+  } catch (error) {
+    console.warn("RSVP save failed", error);
+    statusEl.textContent = "Could not save to the RSVP sheet. Please try again.";
+  } finally {
+    submitButton.disabled = false;
+  }
 }
 
-function hydrateDemoCount() {
+async function hydrateDemoCount() {
+  await refreshRsvpsFromSheet({ silent: true });
   const savedRsvps = readRsvps();
   if (savedRsvps.length > 0) {
-    statusEl.textContent = `${savedRsvps.length} RSVP${savedRsvps.length === 1 ? "" : "s"} saved on this browser.`;
+    statusEl.textContent = isRemoteRsvpEnabled()
+      ? `${savedRsvps.length} RSVP${savedRsvps.length === 1 ? "" : "s"} loaded from the RSVP sheet.`
+      : `${savedRsvps.length} RSVP${savedRsvps.length === 1 ? "" : "s"} saved on this browser.`;
   }
 }
 
@@ -429,11 +549,12 @@ function renderAdminList() {
     .join("");
 }
 
-function openAdminModal() {
+async function openAdminModal() {
   renderAdminList();
   adminModal.classList.add("open");
   adminModal.setAttribute("aria-hidden", "false");
   adminClose.focus();
+  await refreshRsvpsFromSheet({ silent: true });
 }
 
 function closeAdminModal() {
@@ -480,7 +601,11 @@ function exportJson() {
 }
 
 function clearRsvps() {
-  const confirmed = window.confirm("Clear all saved RSVPs from this browser?");
+  const confirmed = window.confirm(
+    isRemoteRsvpEnabled()
+      ? "Clear the cached RSVPs from this browser? This will not delete rows from the Google Sheet."
+      : "Clear all saved RSVPs from this browser?"
+  );
   if (!confirmed) {
     return;
   }

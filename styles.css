@@ -554,6 +554,13 @@ h1 {
   box-shadow: 4px 4px 0 var(--gold);
 }
 
+.primary-action:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
+}
+
 .hero-date {
   position: absolute;
   right: clamp(58px, 9vw, 142px);
