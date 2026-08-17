@@ -22,7 +22,7 @@ const revealTargets = document.querySelectorAll(
 
 const RSVP_STORAGE_KEY = "weddingRsvps";
 // Paste the deployed Google Apps Script Web App URL here after deployment.
-const GOOGLE_SHEET_WEB_APP_URL = "";
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4dIFqcWMp2VpykPtOvGm19ZlOLpw38Ps0FTCxgTlG3LmYUdmeW5qvVRy2FdaLaM1/exec";
 const NAME_PATTERN = /^[A-Za-z ]{2,80}$/;
 const PHONE_PATTERN = /^\+?[0-9]{7,15}$/;
 const PETAL_COLORS = [
@@ -42,6 +42,7 @@ function readStoredRsvps() {
 }
 
 let rsvpEntries = readStoredRsvps();
+let sheetConnectionReady = false;
 
 function isRemoteRsvpEnabled() {
   return GOOGLE_SHEET_WEB_APP_URL.trim().startsWith("https://script.google.com/");
@@ -98,6 +99,7 @@ async function fetchSheetRsvps() {
   const payload = await response.json();
   const remoteEntries = Array.isArray(payload.entries) ? payload.entries : Array.isArray(payload) ? payload : [];
   const entries = remoteEntries.map(normalizeRemoteEntry).filter((entry) => entry.name);
+  sheetConnectionReady = true;
   writeRsvps(entries);
   return entries;
 }
@@ -109,6 +111,7 @@ async function refreshRsvpsFromSheet({ silent = false } = {}) {
       renderAdminList();
     }
   } catch (error) {
+    sheetConnectionReady = false;
     console.warn("RSVP sheet fetch failed", error);
     if (!silent && statusEl.textContent === "") {
       statusEl.textContent = "Using saved RSVPs from this browser until the RSVP sheet is connected.";
@@ -143,14 +146,30 @@ async function saveRsvpToSheet(entry) {
 }
 
 async function storeRsvp(entry) {
-  writeRsvps([...readRsvps(), entry]);
-
   if (!isRemoteRsvpEnabled()) {
+    writeRsvps([...readRsvps(), entry]);
     return { remote: false };
   }
 
-  await saveRsvpToSheet(entry);
-  return { remote: true };
+  if (!sheetConnectionReady) {
+    try {
+      await fetchSheetRsvps();
+    } catch (error) {
+      sheetConnectionReady = false;
+      writeRsvps([...readRsvps(), entry]);
+      return { remote: false };
+    }
+  }
+
+  writeRsvps([...readRsvps(), entry]);
+
+  try {
+    await saveRsvpToSheet(entry);
+    return { remote: true };
+  } catch (error) {
+    sheetConnectionReady = false;
+    return { remote: false };
+  }
 }
 
 function createConfetti() {
