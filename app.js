@@ -68,9 +68,18 @@ function normalizeEvents(value) {
     .filter(Boolean);
 }
 
+function createRsvpId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `rsvp-${Date.now().toString(36)}-${randomPart}`;
+}
+
 function normalizeRemoteEntry(entry) {
   return {
-    id: entry.id || entry.ID || crypto.randomUUID(),
+    id: entry.id || entry.ID || createRsvpId(),
     name: entry.name || entry.Name || "",
     phone: entry.phone || entry.Phone || "",
     side: entry.side || entry.Side || "",
@@ -467,7 +476,7 @@ async function handleSubmit(event) {
 
   const formData = new FormData(form);
   const entry = {
-    id: crypto.randomUUID(),
+    id: createRsvpId(),
     name: formData.get("name").trim(),
     phone: formData.get("phone").trim(),
     side: formData.get("side"),
