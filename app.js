@@ -23,6 +23,7 @@ const revealTargets = document.querySelectorAll(
 const RSVP_STORAGE_KEY = "weddingRsvps";
 // Paste the deployed Google Apps Script Web App URL here after deployment.
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4dIFqcWMp2VpykPtOvGm19ZlOLpw38Ps0FTCxgTlG3LmYUdmeW5qvVRy2FdaLaM1/exec";
+const YOUTUBE_MUSIC_VIDEO_ID = "J2lwoD_kXPg";
 const NAME_PATTERN = /^[A-Za-z ]{2,80}$/;
 const PHONE_PATTERN = /^\+?[0-9]{7,15}$/;
 const PETAL_COLORS = [
@@ -43,6 +44,10 @@ function readStoredRsvps() {
 
 let rsvpEntries = readStoredRsvps();
 let sheetConnectionReady = false;
+let youtubePlayer = null;
+let youtubePlayerReady = false;
+let youtubeApiRequested = false;
+let musicSource = "youtube";
 
 function isRemoteRsvpEnabled() {
   return GOOGLE_SHEET_WEB_APP_URL.trim().startsWith("https://script.google.com/");
@@ -377,39 +382,129 @@ function setMusicButton(isPlaying) {
   }
 }
 
-async function toggleWeddingSong() {
-  if (!weddingAudio || !musicToggle) {
+function loadYouTubeMusicPlayer() {
+  if (youtubePlayerReady || youtubeApiRequested || !document.querySelector("#youtubeMusicPlayer")) {
     return;
   }
 
-  if (weddingAudio.paused) {
-    try {
-      weddingAudio.volume = 0.42;
-      await weddingAudio.play();
-      setMusicButton(true);
-    } catch (error) {
-      setMusicButton(false);
-      musicToggle.title = "Audio could not be played by this browser.";
-    }
-    return;
-  }
+  youtubeApiRequested = true;
+  window.onYouTubeIframeAPIReady = () => {
+    youtubePlayer = new YT.Player("youtubeMusicPlayer", {
+      width: "1",
+      height: "1",
+      videoId: YOUTUBE_MUSIC_VIDEO_ID,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        disablekb: 1,
+        loop: 1,
+        modestbranding: 1,
+        playsinline: 1,
+        playlist: YOUTUBE_MUSIC_VIDEO_ID,
+        rel: 0
+      },
+      events: {
+        onReady: () => {
+          youtubePlayerReady = true;
+          youtubePlayer.setVolume(42);
+        },
+        onStateChange: (event) => {
+          if (event.data === YT.PlayerState.PLAYING) {
+            musicSource = "youtube";
+            weddingAudio.pause();
+            setMusicButton(true);
+          }
 
-  weddingAudio.pause();
-  setMusicButton(false);
+          if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+            setMusicButton(false);
+          }
+        },
+        onError: () => {
+          youtubePlayerReady = false;
+          musicSource = "backup";
+          setMusicButton(false);
+        }
+      }
+    });
+  };
+
+  const script = document.createElement("script");
+  script.src = "https://www.youtube.com/iframe_api";
+  script.async = true;
+  script.onerror = () => {
+    youtubeApiRequested = false;
+    musicSource = "backup";
+  };
+  document.head.appendChild(script);
 }
 
-async function startWeddingSong() {
-  if (!weddingAudio || !musicToggle || !weddingAudio.paused) {
-    return;
+async function playBackupSong() {
+  if (!weddingAudio) {
+    return false;
   }
 
   try {
     weddingAudio.volume = 0.42;
     await weddingAudio.play();
+    musicSource = "backup";
     setMusicButton(true);
+    return true;
   } catch (error) {
     setMusicButton(false);
+    musicToggle.title = "Audio could not be played by this browser.";
+    return false;
   }
+}
+
+async function playWeddingSong() {
+  if (!musicToggle) {
+    return;
+  }
+
+  loadYouTubeMusicPlayer();
+
+  if (youtubePlayerReady && youtubePlayer && typeof youtubePlayer.playVideo === "function") {
+    try {
+      youtubePlayer.playVideo();
+      musicSource = "youtube";
+      return;
+    } catch (error) {
+      await playBackupSong();
+      return;
+    }
+  }
+
+  await playBackupSong();
+}
+
+async function toggleWeddingSong() {
+  if (!weddingAudio || !musicToggle) {
+    return;
+  }
+
+  if (
+    musicSource === "youtube" &&
+    youtubePlayerReady &&
+    youtubePlayer &&
+    typeof youtubePlayer.getPlayerState === "function" &&
+    youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING
+  ) {
+    youtubePlayer.pauseVideo();
+    setMusicButton(false);
+    return;
+  }
+
+  if (!weddingAudio.paused) {
+    weddingAudio.pause();
+    setMusicButton(false);
+    return;
+  }
+
+  await playWeddingSong();
+}
+
+async function startWeddingSong() {
+  await playWeddingSong();
 }
 
 function openInvitationGate() {
@@ -671,8 +766,16 @@ exportCsvButton.addEventListener("click", exportCsv);
 exportJsonButton.addEventListener("click", exportJson);
 clearRsvpsButton.addEventListener("click", clearRsvps);
 musicToggle.addEventListener("click", toggleWeddingSong);
-weddingAudio.addEventListener("pause", () => setMusicButton(false));
-weddingAudio.addEventListener("ended", () => setMusicButton(false));
+weddingAudio.addEventListener("pause", () => {
+  if (musicSource === "backup") {
+    setMusicButton(false);
+  }
+});
+weddingAudio.addEventListener("ended", () => {
+  if (musicSource === "backup") {
+    setMusicButton(false);
+  }
+});
 if (inviteGate) {
   document.body.classList.add("gate-active");
   inviteGate.addEventListener("click", openInvitationGate);
@@ -707,4 +810,5 @@ form.addEventListener("submit", handleSubmit);
 enforceMessageLimit();
 hydrateDemoCount();
 createRosePetals();
+loadYouTubeMusicPlayer();
 setupScratchCard();
