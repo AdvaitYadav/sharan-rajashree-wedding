@@ -47,6 +47,8 @@ let sheetConnectionReady = false;
 let youtubePlayer = null;
 let youtubePlayerReady = false;
 let youtubeApiRequested = false;
+let youtubePendingPlay = false;
+let youtubeFailed = false;
 let musicSource = "youtube";
 
 function isRemoteRsvpEnabled() {
@@ -406,7 +408,18 @@ function loadYouTubeMusicPlayer() {
       events: {
         onReady: () => {
           youtubePlayerReady = true;
+          youtubeFailed = false;
           youtubePlayer.setVolume(42);
+          if (youtubePendingPlay) {
+            youtubePendingPlay = false;
+            try {
+              youtubePlayer.playVideo();
+              musicSource = "youtube";
+            } catch (error) {
+              youtubeFailed = true;
+              playBackupSong();
+            }
+          }
         },
         onStateChange: (event) => {
           if (event.data === YT.PlayerState.PLAYING) {
@@ -421,8 +434,14 @@ function loadYouTubeMusicPlayer() {
         },
         onError: () => {
           youtubePlayerReady = false;
+          youtubeFailed = true;
+          if (youtubePendingPlay) {
+            youtubePendingPlay = false;
+            playBackupSong();
+          } else {
+            setMusicButton(false);
+          }
           musicSource = "backup";
-          setMusicButton(false);
         }
       }
     });
@@ -433,6 +452,13 @@ function loadYouTubeMusicPlayer() {
   script.async = true;
   script.onerror = () => {
     youtubeApiRequested = false;
+    youtubeFailed = true;
+    if (youtubePendingPlay) {
+      youtubePendingPlay = false;
+      playBackupSong();
+    } else {
+      setMusicButton(false);
+    }
     musicSource = "backup";
   };
   document.head.appendChild(script);
@@ -463,6 +489,11 @@ async function playWeddingSong() {
 
   loadYouTubeMusicPlayer();
 
+  if (youtubeFailed) {
+    await playBackupSong();
+    return;
+  }
+
   if (youtubePlayerReady && youtubePlayer && typeof youtubePlayer.playVideo === "function") {
     try {
       youtubePlayer.playVideo();
@@ -474,7 +505,9 @@ async function playWeddingSong() {
     }
   }
 
-  await playBackupSong();
+  youtubePendingPlay = true;
+  musicSource = "youtube";
+  musicToggle.title = "Loading YouTube wedding song...";
 }
 
 async function toggleWeddingSong() {
@@ -496,6 +529,12 @@ async function toggleWeddingSong() {
 
   if (!weddingAudio.paused) {
     weddingAudio.pause();
+    setMusicButton(false);
+    return;
+  }
+
+  if (youtubePendingPlay) {
+    youtubePendingPlay = false;
     setMusicButton(false);
     return;
   }
