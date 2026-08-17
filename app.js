@@ -262,6 +262,35 @@ function createRosePetals() {
   }
 }
 
+function createAkshataBurst() {
+  if (!inviteGate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const grainCount = window.innerWidth < 700 ? 34 : 54;
+
+  for (let index = 0; index < grainCount; index += 1) {
+    const grain = document.createElement("span");
+    const size = 3 + Math.random() * 3.8;
+    const duration = 1.05 + Math.random() * 0.55;
+    const delay = 0.88 + Math.random() * 0.52;
+    const drift = Math.random() * 170 - 85;
+    const startX = 18 + Math.random() * 64;
+    const startY = -18 - Math.random() * 38;
+
+    grain.className = "akshata-grain";
+    grain.style.setProperty("--x", `${startX.toFixed(1)}%`);
+    grain.style.setProperty("--y", `${startY.toFixed(1)}px`);
+    grain.style.setProperty("--size", `${size.toFixed(1)}px`);
+    grain.style.setProperty("--duration", `${duration.toFixed(2)}s`);
+    grain.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+    grain.style.setProperty("--drift", `${drift.toFixed(1)}px`);
+    grain.style.setProperty("--rotate", `${(Math.random() * 220 - 110).toFixed(1)}deg`);
+    inviteGate.appendChild(grain);
+    window.setTimeout(() => grain.remove(), Math.ceil((duration + delay + 0.4) * 1000));
+  }
+}
+
 function selectedEvents(formData) {
   return formData.getAll("events");
 }
@@ -315,18 +344,37 @@ function setupScratchCard() {
     context.setTransform(scale, 0, 0, scale, 0, 0);
 
     const gradient = context.createLinearGradient(0, 0, rect.width, rect.height);
-    gradient.addColorStop(0, "#6d1b2b");
-    gradient.addColorStop(0.48, "#d4a017");
-    gradient.addColorStop(1, "#007c83");
+    gradient.addColorStop(0, "#7a3f1c");
+    gradient.addColorStop(0.44, "#d8a43a");
+    gradient.addColorStop(1, "#fff1c4");
     context.globalCompositeOperation = "source-over";
     context.fillStyle = gradient;
     context.fillRect(0, 0, rect.width, rect.height);
 
-    context.fillStyle = "rgba(255, 250, 241, 0.94)";
-    context.font = "900 18px Avenir Next, Arial, sans-serif";
+    context.fillStyle = "rgba(255, 249, 234, 0.16)";
+    for (let x = -rect.height; x < rect.width + rect.height; x += 22) {
+      context.fillRect(x, 0, 1.2, rect.height);
+    }
+
+    context.fillStyle = "rgba(91, 43, 18, 0.32)";
+    context.fillRect(16, 16, rect.width - 32, 1);
+    context.fillRect(16, rect.height - 17, rect.width - 32, 1);
+    context.fillRect(16, 16, 1, rect.height - 32);
+    context.fillRect(rect.width - 17, 16, 1, rect.height - 32);
+
+    context.fillStyle = "rgba(255, 249, 234, 0.94)";
+    context.font = "800 15px Georgia, serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText("SCRATCH TO SEE WEDDING DATE", rect.width / 2, rect.height / 2);
+    context.fillText("SCRATCH TO SEE", rect.width / 2, rect.height / 2 - 12);
+    context.fillText("WEDDING DATE", rect.width / 2, rect.height / 2 + 12);
+
+    context.fillStyle = "rgba(169, 33, 32, 0.9)";
+    context.beginPath();
+    context.arc(rect.width / 2 - 82, rect.height / 2, 3.5, 0, Math.PI * 2);
+    context.arc(rect.width / 2 + 82, rect.height / 2, 3.5, 0, Math.PI * 2);
+    context.fill();
+
     scratchChecks = 0;
     scratchCard.classList.remove("revealed");
   }
@@ -553,13 +601,14 @@ function openInvitationGate() {
 
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   inviteGate.classList.add("opening");
+  createAkshataBurst();
   document.body.classList.remove("gate-active");
   startWeddingSong();
 
   window.setTimeout(() => {
     inviteGate.classList.add("is-hidden");
     inviteGate.setAttribute("aria-hidden", "true");
-  }, 3700);
+  }, 5000);
 }
 
 function cleanName(value) {
