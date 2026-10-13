@@ -17,7 +17,7 @@ const weddingAudio = document.querySelector("#weddingAudio");
 const musicToggle = document.querySelector("#musicToggle");
 const inviteGate = document.querySelector("#inviteGate");
 const revealTargets = document.querySelectorAll(
-  ".section-heading, .scratch-card, .story-card, .event-section > div, .gallery-heading, .rsvp-copy, .rsvp-form, .venue-grid article, .map-shell, .blessing-grid"
+  ".section-heading, .scratch-card, .event-section > div, .gallery-heading, .rsvp-copy, .rsvp-form, .venue-grid article, .map-shell, .thank-you-mark, .thank-you-note"
 );
 
 const RSVP_STORAGE_KEY = "weddingRsvps";
@@ -325,7 +325,7 @@ function setupScratchCard() {
     }
 
     const scratchedRatio = transparentPixels / (scratchCanvas.width * scratchCanvas.height);
-    if (scratchedRatio >= 0.75) {
+    if (scratchedRatio >= 0.55) {
       hasRevealedDate = true;
       scratchCard.classList.add("revealed");
     }
