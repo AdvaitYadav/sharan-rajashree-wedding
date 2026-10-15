@@ -23,7 +23,7 @@ const revealTargets = document.querySelectorAll(
 const RSVP_STORAGE_KEY = "weddingRsvps";
 // Paste the deployed Google Apps Script Web App URL here after deployment.
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4dIFqcWMp2VpykPtOvGm19ZlOLpw38Ps0FTCxgTlG3LmYUdmeW5qvVRy2FdaLaM1/exec";
-const YOUTUBE_MUSIC_VIDEO_ID = "J2lwoD_kXPg";
+const YOUTUBE_MUSIC_VIDEO_ID = "MbLpZXIZZOg";
 const NAME_PATTERN = /^[A-Za-z ]{2,80}$/;
 const PHONE_PATTERN = /^\+?[0-9]{7,15}$/;
 const PETAL_COLORS = [

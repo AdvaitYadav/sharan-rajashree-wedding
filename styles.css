@@ -4163,3 +4163,136 @@ textarea {
     font-size: clamp(0.5rem, 2.45vw, 0.6rem);
   }
 }
+
+
+/* === Requested content-flow and readability adjustments === */
+/* Keep Advait's existing hero artwork and background declarations untouched. */
+.hero .hero-copy {
+  text-align: center;
+}
+.hero .hero-title-accessible {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.hero .hero-line {
+  max-width: 610px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero .couple-details {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.hero .couple-details p {
+  padding-left: 0;
+  border-left: 0;
+}
+.hero .couple-details .couple-connector {
+  display: block;
+  margin: 0;
+  color: #9d2d3f;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+  font-style: italic;
+  line-height: 1.1;
+}
+.hero .primary-action {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  margin: 24px auto 0;
+}
+
+/* Keep the moving event words and falling petals behind readable event copy. */
+.event-section > div:not(.event-art) {
+  position: relative;
+  z-index: 26;
+}
+.event-section .background-word {
+  z-index: 0;
+  color: rgba(255, 250, 241, 0.075);
+  pointer-events: none;
+}
+.event-section h3,
+.event-section .eyebrow,
+.event-section .event-description,
+.event-section dl,
+.event-section .direction-link {
+  text-shadow: 0 2px 10px rgba(20, 12, 8, 0.22);
+}
+.mehndi h3,
+.mehndi .eyebrow,
+.mehndi .event-description,
+.mehndi dt,
+.mehndi dd,
+.mehndi .direction-link,
+.sangeet h3,
+.sangeet .eyebrow,
+.sangeet .event-description,
+.sangeet dt,
+.sangeet dd,
+.sangeet .direction-link,
+.wedding h3,
+.wedding .eyebrow,
+.wedding .event-description,
+.wedding dt,
+.wedding dd,
+.wedding .direction-link,
+.reception h3,
+.reception .eyebrow,
+.reception .event-description,
+.reception dt,
+.reception dd,
+.reception .direction-link {
+  color: #fffaf0;
+}
+.mehndi .event-art {
+  background:
+    linear-gradient(135deg, rgba(255, 250, 241, 0.08), rgba(46, 125, 50, 0.05)),
+    url("assets/mehendi-celebration.png") center / cover no-repeat;
+}
+
+@media (max-width: 680px) {
+  .hero .eyebrow {
+    font-size: clamp(0.88rem, 3.85vw, 1rem);
+  }
+
+  .hero .hero-line {
+    font-size: clamp(0.94rem, 3.9vw, 1.08rem);
+    line-height: 1.32;
+  }
+
+  .hero .couple-details {
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .hero .couple-details strong {
+    font-size: clamp(1.28rem, 5.65vw, 1.58rem);
+  }
+
+  .hero .couple-details span {
+    font-size: clamp(0.78rem, 3.42vw, 0.9rem);
+    line-height: 1.24;
+  }
+
+  .hero .couple-details .couple-connector {
+    font-size: clamp(1.28rem, 5.35vw, 1.58rem);
+  }
+
+  .hero .primary-action {
+    min-height: 48px;
+    margin-top: 16px;
+    padding: 0 24px;
+    font-size: clamp(0.76rem, 3.35vw, 0.86rem);
+    box-shadow: 4px 4px 0 rgba(201, 151, 43, 0.74);
+  }
+}
